@@ -78,6 +78,9 @@ async def ban( ctx, member: discord.Member, *, reason= None ):
 	await member.ban( reason = reason )
 	await ctx.send(f'ban user { member.mention }')
 
+@bot.command( pass_context = True )
+async def donate( ctx ):
+	Embed = discord.Embed(title = 'Donation links')
 
 token = open( 'token.txt', 'r' ).readline()
 

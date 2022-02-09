@@ -4,10 +4,22 @@ import sqlite3
 import youtube_dl
 import os
 import json
-
+import asyncio
+import asyncpraw
+import config
 
 
 bot = commands.Bot(command_prefix="$", help_command=None, intents=discord.Intents.all())
+reddit = asyncpraw.Reddit(client_id=config.settings['CLIENT_ID'],
+	client_secret=config.settings['SECRET_CODE'],
+	user_agent='rendom_reddit_bot/0.0.1'
+	)
+memes = []
+TIMEOUT = 5
+ID_CHANNEL = 932748473424564224
+SUBREDDIT_NAME = 'memes'
+POST_LIMIT = 1
+
 
 
 
@@ -25,6 +37,15 @@ async def on_ready():
 	print("Bot was connected to the server")
 
 	await bot.change_presence(status=discord.Status.online, activity=discord.Game("$help")) # Изменяем статус боту$
+	channel = bot.get_channel(ID_CHANNEL)
+	while True:
+		await asyncio.sleep(TIMEOUT)
+		memes_submissions = await reddit.subreddit(SUBREDDIT_NAME)
+		memes_submissions = memes_submissions.new(limit=POST_LIMIT)
+		item = await memes_submissions.__anext__()
+		if item.title not in memes:
+			memes.append(item.title)
+			await channel.send(item.url)
 
 @bot.command( pss_context = True )
 
@@ -42,11 +63,11 @@ async def say   ( ctx, *, message ):
 async def help(ctx):
 
 	embed = discord.Embed(
-		title="Commands",
-		description="Here you can find the necessary command"
+		title="💼Commands",
+		description="🔎Here you can find the necessary command🔎"
 	)
 	commands_list = ["$say", "$clear", "$kick", "$donate", "$mute","$play", "$stop"]
-	descriptions_for_commands = ["Make the bot talk!", "Clears the chat", "Kick a user!", 'Show donation links', 'mute the user ', 'Play a music!','Stop a sound']
+	descriptions_for_commands = ["🤖Make the bot talk!🤖", "🚰Clears the chat🚰", "❌Kick a user!❌", '💰Show donation links💰', '🤐mute the user 🤐', '♪Play a music!♪','♪Stop a sound♪']
 
 	for command_name, description_command in zip(commands_list, descriptions_for_commands):
 		embed.add_field(
@@ -91,16 +112,30 @@ async def ban( ctx, member: discord.Member, *, reason= None ):
 @bot.command()  
 async def donate( ctx ):
 	embed = discord.Embed(
-		title="Donate Links",
-		description=' 👩🏿‍💻Link: https://www.donationalerts.com/r/hippi_games_tv '
+		title="💰DONATE LINK",
+		description=' 👩🏿‍💻Link https://www.donationalerts.com/r/hippi_games_tv '
 	)
+	
+	
 
 
 
 	await ctx.send(embed=embed)
 
+channels_count = 0
+for guild in bot.guilds:
+    channels_count += len(guild.channels)
 
-api_key = '29c71a8c757288ea88dce3d83bde2991'
+@bot.command()
+async def botservers():
+	guilds_count = len(bot.guilds)
+
+@bot.command()
+async def pop(ctx):
+	await ctx.send('💩')
+
+
+
 token = open( 'token.txt', 'r' ).readline()
 
 bot.run( token )

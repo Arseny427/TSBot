@@ -3,23 +3,22 @@ from discord.ext import commands
 import sqlite3
 import youtube_dl
 import os
-import json
-import asyncio
-import asyncpraw
-import config
+from googleapiclient.discovery import build
+import random
+import numpy as np
 
 
+
+
+os.system("pip3 install lavalink")
+os.system("pip3 install dismusic")
 bot = commands.Bot(command_prefix="$", help_command=None, intents=discord.Intents.all())
-reddit = asyncpraw.Reddit(client_id=config.settings['CLIENT_ID'],
-	client_secret=config.settings['SECRET_CODE'],
-	user_agent='rendom_reddit_bot/0.0.1'
-	)
-memes = []
-TIMEOUT = 5
-ID_CHANNEL = 932748473424564224
-SUBREDDIT_NAME = 'memes'
-POST_LIMIT = 1
 
+
+
+
+
+api_key = 'AIzaSyAOwnf58KPpWpYQ1rwkSfjgtuNDiJmp1xA'
 
 
 
@@ -36,16 +35,8 @@ async def on_ready():
 		''')
 	print("Bot was connected to the server")
 
+   
 	await bot.change_presence(status=discord.Status.online, activity=discord.Game("$help")) # Изменяем статус боту$
-	channel = bot.get_channel(ID_CHANNEL)
-	while True:
-		await asyncio.sleep(TIMEOUT)
-		memes_submissions = await reddit.subreddit(SUBREDDIT_NAME)
-		memes_submissions = memes_submissions.new(limit=POST_LIMIT)
-		item = await memes_submissions.__anext__()
-		if item.title not in memes:
-			memes.append(item.title)
-			await channel.send(item.url)
 
 @bot.command( pss_context = True )
 
@@ -64,10 +55,11 @@ async def help(ctx):
 
 	embed = discord.Embed(
 		title="💼Commands",
-		description="🔎Here you can find the necessary command🔎"
+		description="🔎Here you can find the necessary command🔎",
+		color = discord.Color.blue()
 	)
-	commands_list = ["$say", "$clear", "$kick", "$donate", "$mute","$play", "$stop"]
-	descriptions_for_commands = ["🤖Make the bot talk!🤖", "🚰Clears the chat🚰", "❌Kick a user!❌", '💰Show donation links💰', '🤐mute the user 🤐', '♪Play a music!♪','♪Stop a sound♪']
+	commands_list = ["$say", "$clear", "$kick", "$donate", "$mute","$play name a sound", "$stop",'$show name image']
+	descriptions_for_commands = ["🤖Make the bot talk!🤖", "🚰Clears the chat🚰", "❌Kick a user!❌", '💰Show donation links💰', '🤐mute the user 🤐', '♪Play a music!♪','♪Stop a sound♪', '🔎search image in google🔎']
 
 	for command_name, description_command in zip(commands_list, descriptions_for_commands):
 		embed.add_field(
@@ -80,7 +72,7 @@ async def help(ctx):
 
 
 	
-@bot.command(name="mute", brief="Запретить пользователю писать (настройте роль и канал)", usage="mute <member>")
+@bot.command(name="mute", brief="Запретить пользователю писать", usage="mute <member>")
 async def mute_user(ctx, member: discord.Member):
 	mute_role = discord.utils.get( ctx.message.guild.roles, name="Mute" )
 
@@ -112,7 +104,7 @@ async def ban( ctx, member: discord.Member, *, reason= None ):
 @bot.command()  
 async def donate( ctx ):
 	embed = discord.Embed(
-		title="💰DONATE LINK",
+		title="💰DONATE LINK💰",
 		description=' 👩🏿‍💻Link https://www.donationalerts.com/r/hippi_games_tv '
 	)
 	
@@ -125,17 +117,33 @@ async def donate( ctx ):
 channels_count = 0
 for guild in bot.guilds:
     channels_count += len(guild.channels)
+ 
 
 @bot.command()
-async def botservers():
-	guilds_count = len(bot.guilds)
+async def poop(ctx):
+ await ctx.send(':poop:')
+
+@bot.event
+async def on_command_error(ctx, error):
+	print(error)
+
+	if isinstance(error, commands.MissingPermissions):
+		await ctx.send(f"{ctx.author}, у вас недостаточно прав для выполнения данной команды!")
+	elif isinstance(error, commands.UserInputError):
+		await ctx.send(embed=discord.Embed(
+			description=f"Правильное использование команды: `{ctx.prefix}{ctx.command.name}` ({ctx.command.brief})\nExample: {ctx.prefix}{ctx.command.usage}"
+		))
+
+@bot.command(aliases=["show"])
+async def showpic(ctx,*, search):
+  ran = random.randint(0,9)
+  resource = build('customsearch','v1', developerKey=api_key).cse()
+  result = resource.list(q=f'{search}', cx='9ba6f87c309cc2e15', searchType='image').execute()
+  url = result["items"][ran]["link"]
+  embed1 = discord.Embed(title=f'Here you image ({search.title()})' )
+  embed1.set_image(url=url)
+  await ctx.send(embed=embed1)
 
 @bot.command()
-async def pop(ctx):
-	await ctx.send('💩')
-
-
-
-token = open( 'token.txt', 'r' ).readline()
-
-bot.run( token )
+async def info():
+  embed2 = discord.Embed()

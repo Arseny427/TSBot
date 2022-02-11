@@ -6,7 +6,7 @@ import os
 from googleapiclient.discovery import build
 import random
 import numpy as np
-
+import datetime
 
 
 
@@ -133,7 +133,6 @@ async def on_command_error(ctx, error):
 		await ctx.send(embed=discord.Embed(
 			description=f"Правильное использование команды: `{ctx.prefix}{ctx.command.name}` ({ctx.command.brief})\nExample: {ctx.prefix}{ctx.command.usage}"
 		))
-
 @bot.command(aliases=["show"])
 async def showpic(ctx,*, search):
   ran = random.randint(0,9)
@@ -145,5 +144,32 @@ async def showpic(ctx,*, search):
   await ctx.send(embed=embed1)
 
 @bot.command()
-async def info():
-  embed2 = discord.Embed()
+async def info(ctx):
+  embed2 = discord.Embed(title='📖INFO📖',
+  description='PREFIX = $',
+  inline=False
+  )
+  
+  await ctx.send(embed=embed2)
+
+@bot.command()
+async def time(ctx):
+  embed3 = discord.Embed(title='🕖TIME🕖',
+  description='Show the time')
+  now_date = datetime.datetime.now()
+  embed3.add_field( name = 'Time and date', value = 'Time and date:{}'.format( now_date ) )
+  
+  await ctx.send(embed=embed3)
+
+@bot.command()
+async def avatar(ctx, member: discord.Member=None):
+  if member == None:
+    member = ctx.author
+  
+  embed4 = discord.Embed(title=f'Avatar {member.name} ')
+  memberAvatar = member.avatar_url
+  embed4.set_image(url = f'{memberAvatar}')
+  await ctx.send(embed=embed4)
+
+
+bot.run( 'OTM4Nzg2MDczMDE2OTM4NTQ2.YfvWqQ.DRLo3OPJBIcfGRl31dFMB2UIcJ4' )

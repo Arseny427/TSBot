@@ -172,4 +172,4 @@ async def avatar(ctx, member: discord.Member=None):
   await ctx.send(embed=embed4)
 
 
-bot.run( 'OTM4Nzg2MDczMDE2OTM4NTQ2.YfvWqQ.DRLo3OPJBIcfGRl31dFMB2UIcJ4' )
+bot.run( TOKEN )
